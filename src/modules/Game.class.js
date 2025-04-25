@@ -1,8 +1,5 @@
 'use strict';
 
-/**
- * This class represents the game.
- */
 class Game {
   constructor(initialState) {
     if (!initialState) {
@@ -24,72 +21,76 @@ class Game {
     this.status = 'idle';
   }
 
-  moveLeft() {
+  prepareMove() {
     if (this.status !== 'playing' && this.status !== 'win') {
-      return;
+      return null;
     }
 
     const oldBoard = JSON.parse(JSON.stringify(this.board));
+
+    return { oldBoard };
+  }
+
+  handleMove(oldBoard) {
+    const hasChanged = this.board.some((row, i) => {
+      return row.some((cell, j) => cell !== oldBoard[i][j]);
+    });
+
+    if (hasChanged) {
+      this.allRandomTile();
+    }
+
+    const has2048 = this.board.some((row) => row.includes(2048));
+
+    if (has2048 && this.status !== 'win') {
+      this.status = 'win';
+    }
+
+    if (!this.canMove() && !has2048) {
+      this.status = 'lose';
+    }
+  }
+
+  moveLeft() {
+    const moveData = this.prepareMove();
+
+    if (!moveData) {
+      return;
+    }
+
+    const { oldBoard } = moveData;
 
     for (let i = 0; i < 4; i++) {
       this.board[i] = this.processRow(this.board[i]);
     }
 
-    const hasChanged = this.board.some((row, i) => {
-      return row.some((cell, j) => cell !== oldBoard[i][j]);
-    });
-
-    if (hasChanged) {
-      this.allRandomTile();
-    }
-
-    const has2048 = this.board.some((row) => row.includes(2048));
-
-    if (has2048 && this.status !== 'win') {
-      this.status = 'win';
-    }
-
-    if (!this.canMove() && !has2048) {
-      this.status = 'lose';
-    }
+    this.handleMove(oldBoard);
   }
 
   moveRight() {
-    if (this.status !== 'playing' && this.status !== 'win') {
+    const moveData = this.prepareMove();
+
+    if (!moveData) {
       return;
     }
 
-    const oldBoard = JSON.parse(JSON.stringify(this.board));
+    const { oldBoard } = moveData;
 
     for (let i = 0; i < 4; i++) {
       this.board[i] = this.processRow(this.board[i].reverse()).reverse();
     }
 
-    const hasChanged = this.board.some((row, i) => {
-      return row.some((cell, j) => cell !== oldBoard[i][j]);
-    });
-
-    if (hasChanged) {
-      this.allRandomTile();
-    }
-
-    const has2048 = this.board.some((row) => row.includes(2048));
-
-    if (has2048 && this.status !== 'win') {
-      this.status = 'win';
-    }
-
-    if (!this.canMove() && !has2048) {
-      this.status = 'lose';
-    }
+    this.handleMove(oldBoard);
   }
 
   moveUp() {
-    if (this.status !== 'playing' && this.status !== 'win') {
+    const moveData = this.prepareMove();
+
+    if (!moveData) {
       return;
     }
 
-    const oldBoard = JSON.parse(JSON.stringify(this.board));
+    const { oldBoard } = moveData;
     const transposed = [];
 
     for (let i = 0; i < 4; i++) {
@@ -110,31 +111,17 @@ class Game {
       }
     }
 
-    const hasChanged = this.board.some((row, i) => {
-      return row.some((cell, j) => cell !== oldBoard[i][j]);
-    });
-
-    if (hasChanged) {
-      this.allRandomTile();
-    }
-
-    const has2048 = this.board.some((row) => row.includes(2048));
-
-    if (has2048 && this.status !== 'win') {
-      this.status = 'win';
-    }
-
-    if (!this.canMove() && !has2048) {
-      this.status = 'lose';
-    }
+    this.handleMove(oldBoard);
   }
 
   moveDown() {
-    if (this.status !== 'playing' && this.status !== 'win') {
+    const moveData = this.prepareMove();
+
+    if (!moveData) {
       return;
     }
 
-    const oldBoard = JSON.parse(JSON.stringify(this.board));
+    const { oldBoard } = moveData;
     const transposed = [];
 
     for (let i = 0; i < 4; i++) {
@@ -155,23 +142,7 @@ class Game {
       }
     }
 
-    const hasChanged = this.board.some((row, i) => {
-      return row.some((cell, j) => cell !== oldBoard[i][j]);
-    });
-
-    if (hasChanged) {
-      this.allRandomTile();
-    }
-
-    const has2048 = this.board.some((row) => row.includes(2048));
-
-    if (has2048 && this.status !== 'win') {
-      this.status = 'win';
-    }
-
-    if (!this.canMove() && !has2048) {
-      this.status = 'lose';
-    }
+    this.handleMove(oldBoard);
   }
 
   canMove() {
